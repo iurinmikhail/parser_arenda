@@ -1,8 +1,9 @@
 import json
 import pprint
 
+import bs4
 import requests
-from bs4 import BeautifulSoup as bs
+
 import requests
 from time import sleep
 from selenium import webdriver
@@ -28,7 +29,7 @@ def write_html_in_file(html: str):
 
 def get_pages(html: str) -> int:
     """Получение количества страниц"""
-    soup = bs(html, 'html')
+    soup = bs4.BeautifulSoup(html, 'html')
     divs = soup.find('nav', class_='paginator')
     pages = divs.find_all('a', class_='paginator__btn')[-2].get('href')
     total_pages = pages.split('page=')[1].split('&')[0]
@@ -37,7 +38,7 @@ def get_pages(html: str) -> int:
 
 def get_data(html: str):
     """Ищет нужные данные на странице"""
-    soup = bs(html, 'html')
+    soup = bs4.BeautifulSoup(html, 'html')
     divs = soup.find('section', class_='a-list a-search-list a-list-with-favs')
     ads = divs.find_all('div', class_='a-card__inc')
     # pages = str(divs.find_all('a', class_='a-card__title'))
@@ -73,6 +74,10 @@ def get_data(html: str):
         except:
             descr = ''
         try:
+            start = ad.find('span', class_='a-view-count status-item').text.strip()
+        except:
+            start = ''
+        try:
             div = ad.find('div', class_='a-card__header-left')
             url = "https://krisha.kz" + div.find('a').get('href')
             # tel = ''
@@ -86,7 +91,8 @@ def get_data(html: str):
                 'square': square,
                 'address': address,
                 'description': descr,
-                'url': url
+                'url': url,
+                'start': start
                 }
         result_data.append(data)
     return result_data
@@ -108,7 +114,7 @@ def collect_data(total_pages: int, url):
 def main():
 
     price_from = 150000
-    price_to = 250000
+    price_to = 200000
     url = f"https://krisha.kz/arenda/kvartiry/almaty/?das[_sys.hasphoto]=1&das[live.rooms][]=1&das[live.rooms][]=2&das[price][from]={price_from}&das[price][to]={price_to}&das[rent.period]=2&das[who]=1"
     html = get_html(url=url)
     # write_html_in_file(html)
