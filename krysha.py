@@ -16,13 +16,18 @@ headers = {
 
 
 def get_html(url: str):
-    """ получение кода страницы """
+    """ Получение кода страницы и преобразование его в html"""
     s = requests.Session()
     response = s.get(url=url, headers=headers)
     return response.text
 
 
 def write_html_in_file(html: str):
+    """
+    Записывает данные странницы html в файл
+    :param html: странца
+    :return: Записывает данные html в index.html
+    """
     with open('index.html', 'w', encoding='utf-8') as file:
         file.write(html)
 
@@ -37,12 +42,12 @@ def get_pages(html: str) -> int:
 
 
 def get_data(html: str):
-    """Ищет нужные данные на странице"""
+    """
+    Ищет данные на одной странице
+    """
     soup = bs4.BeautifulSoup(html, 'html')
     divs = soup.find('section', class_='a-list a-search-list a-list-with-favs')
     ads = divs.find_all('div', class_='a-card__inc')
-    # pages = str(divs.find_all('a', class_='a-card__title'))
-    # data_name = [i.strip('</a') for i in pages.split('>')[1::2]]
     result_data = []
     for ad in ads:
         try:
@@ -74,9 +79,10 @@ def get_data(html: str):
         except:
             descr = ''
         try:
-            start = ad.find('span', class_='a-view-count status-item').text.strip()
+            div = ad.find('div', class_='card-stats').text.strip()
+            data = ' '.join(div.split()[1:])
         except:
-            start = ''
+            data = ''
         try:
             div = ad.find('div', class_='a-card__header-left')
             url = "https://krisha.kz" + div.find('a').get('href')
@@ -92,13 +98,16 @@ def get_data(html: str):
                 'address': address,
                 'description': descr,
                 'url': url,
-                'start': start
+                'data': data
                 }
         result_data.append(data)
     return result_data
 
 
 def collect_data(total_pages: int, url):
+    """
+    Перебирает все страницы и применяет функцию get_data(data). Записывает данные в json
+    """
     s = requests.Session()
     result_all = []
     for i in range(1, total_pages + 1):
@@ -108,6 +117,7 @@ def collect_data(total_pages: int, url):
         data = response.text
         result_temp = get_data(data)
         result_all.append(result_temp)
+
     with open('result.json', 'w', encoding='utf-8') as file:
         json.dump(result_all, file, indent=4, ensure_ascii=False)
 
