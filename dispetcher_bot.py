@@ -15,13 +15,13 @@ dp = Dispatcher(bot)
 
 @dp.message_handler(commands="start")
 async def start(message: types.Message):
-    start_buttons = ["Кроссовки", "Видеокарты", "Гречка"]
+    start_buttons = ["Квартиры"]
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*start_buttons)
 
-    await message.answer("Товары со скидкой", reply_markup=keyboard)
+    await message.answer("Квартиры", reply_markup=keyboard)
 
-@dp.message_handler(Text(equals="Кроссовки"))
+@dp.message_handler(Text(equals="Квартиры"))
 async def get_discount_sneakers(message: types.Message):
     await message.answer("Please waiting...")
 
