@@ -32,10 +32,12 @@ async def get_discount_sneakers(message: types.Message):
 
     for i in data:
         for item in i:
-            card = f"{hlink(item.get('title'), item.get('price'))}\n" \
-                   f"{hbold('Этаж: ')} {item.get('etaj')}\n" \
-                   f"{hbold('Прайс: ')} {item.get('price')}\n" \
-                   f"{hbold('Описание: ')} -{item.get('description')}%: {item.get('url')}🔥"
+            card = f"{hlink(item.get('title'), item.get('price'))}\n\n" \
+                   f"{hbold('Стоимость: ')}{item.get('price')}\n\n" \
+                   f"{hbold('Адрес: ')}{item.get('address')}\n\n" \
+                   f"{hbold('Этаж: ')}{item.get('etaj')}\n\n" \
+                   f"{hbold('Описание: ')}{item.get('description')}\n\n"\
+                   f"🔥{item.get('url')}"
 
             await message.answer(card)
 

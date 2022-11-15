@@ -1,13 +1,8 @@
 import json
-import pprint
-
 import bs4
 import requests
+from datetime import date
 
-import requests
-from time import sleep
-from selenium import webdriver
-import urllib.request
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -41,7 +36,7 @@ def get_pages(html: str) -> int:
     return int(total_pages)
 
 
-def get_data(html: str):
+def get_data(html: str, date):
     """
     Ищет данные на одной странице
     """
@@ -65,7 +60,6 @@ def get_data(html: str):
             etaj = div.split(",")[2]
         except:
             etaj = ''
-
         try:
             price = ad.find('div', class_='a-card__price').text.strip()
         except:
@@ -80,16 +74,15 @@ def get_data(html: str):
             descr = ''
         try:
             div = ad.find('div', class_='card-stats').text.strip()
-            data = ' '.join(div.split()[1:])
+            release = ' '.join(div.split()[1:])
         except:
-            data = ''
+            release = ''
         try:
             div = ad.find('div', class_='a-card__header-left')
             url = "https://krisha.kz" + div.find('a').get('href')
-            # tel = ''
         except:
             url = ''
-            # tel = ''
+
 
         data = {'title': kv,
                 'price': price,
@@ -98,13 +91,14 @@ def get_data(html: str):
                 'address': address,
                 'description': descr,
                 'url': url,
-                'data': data
+                'release': release
                 }
-        result_data.append(data)
+        if date in release:
+            result_data.append(data)
     return result_data
 
 
-def collect_data(total_pages: int, url):
+def collect_data(total_pages: int, url: str, date):
     """
     Перебирает все страницы и применяет функцию get_data(data). Записывает данные в json
     """
@@ -115,21 +109,25 @@ def collect_data(total_pages: int, url):
         url = url + pages
         response = s.get(url=url, headers=headers)
         data = response.text
-        result_temp = get_data(data)
+        result_temp = get_data(data, date)
         result_all.append(result_temp)
 
     with open('result.json', 'w', encoding='utf-8') as file:
         json.dump(result_all, file, indent=4, ensure_ascii=False)
 
 def main():
-
     price_from = 150000
     price_to = 200000
-    url = f"https://krisha.kz/arenda/kvartiry/almaty/?das[_sys.hasphoto]=1&das[live.rooms][]=1&das[live.rooms][]=2&das[price][from]={price_from}&das[price][to]={price_to}&das[rent.period]=2&das[who]=1"
+    current_date = str(date.today())[-2:]
+    room = '2'
+    cities = 'almaty'
+    url = f"https://krisha.kz/arenda/kvartiry/{cities}/?das[_sys.hasphoto]=1&das[live.rooms][]={room}&das[price][from]={price_from}&das[price][to]={price_to}&das[rent.period]=2&das[who]=1"
     html = get_html(url=url)
     # write_html_in_file(html)
     total_pages = get_pages(html)
-    collect_data(total_pages, url)
-    get_data(html)
+    collect_data(total_pages, url, current_date)
+    get_data(html, current_date)
+
+
 if __name__ == '__main__':
     main()
