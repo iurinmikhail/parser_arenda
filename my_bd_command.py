@@ -27,22 +27,22 @@ def create_table():
 
 def insert_arenda(col1, col2, col3, col4, col5, col6, col7, col8, col9, col10):
     """Вставляет данные в бд"""
-    with sqlite3.connect("arenda_bd_saved_with_sqlite.db") as db:
+    with sqlite3.connect("arenda_bd.db") as db:
         cursor = db.cursor()
-        data_list = (col1, col2, col3, col4,col5, col6, col7, col8, col9, col10, datetime.datetime.now())
+        data_list = (col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, datetime.datetime.now())
         cursor.execute("""
-                        INSERT INTO news (id_card, title, price, etaj, square, zone, address, description,/
+                        INSERT INTO arenda (id_card, title, price, etaj, square, zone, address, description,
                         url, publish_date, parsing_date) 
-                        VALUES (?, ?, ?, ?, ?);
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?);
                             """, data_list)
         db.commit()
 
 
-def check_news(title):
+def check_arenda(id_card):
     """Проверка наличия объявления в БД"""
-    with sqlite3.connect("arenda_bd_saved_with_sqlite.db") as db:
+    with sqlite3.connect("arenda_bd.db") as db:
         cursor = db.cursor()
-        cursor.execute("""SELECT title FROM arenda WHERE title = ? """, (title,))
+        cursor.execute(f"""SELECT id_card FROM arenda WHERE id_card = {id_card} """)
         result = cursor.fetchall()
         if len(result) == 0:
             return 0
@@ -52,7 +52,7 @@ def check_news(title):
 
 def get_data_from_db():
     """Получение данных из БД"""
-    with sqlite3.connect("arenda_bd_saved_with_sqlite.db") as db:
+    with sqlite3.connect("arenda_bd.db") as db:
         cursor = db.cursor()
         cursor.execute("""SELECT id_card, title, price, etaj, square, zone, address, description,/
                         url, publish_date, parsing_date FROM arenda""")

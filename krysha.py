@@ -52,9 +52,9 @@ def get_data(html: str, date):
             id_card = ''
         try:
             div = ad.find('a', class_='a-card__title').text
-            kv = div.split(",")[0]
+            title = div.split(",")[0]
         except:
-            kv = ''
+            title = ''
         try:
             div = ad.find('a', class_='a-card__title').text
             square = div.split(",")[1]
@@ -78,9 +78,9 @@ def get_data(html: str, date):
         except:
             address = ''
         try:
-            descr = ad.find('div', class_='a-card__text-preview').text.strip()
+            description = ad.find('div', class_='a-card__text-preview').text.strip()
         except:
-            descr = ''
+            description = ''
         try:
             div = ad.find('div', class_='card-stats').text.strip()
             publish_date = ' '.join(div.split()[1:])
@@ -91,22 +91,27 @@ def get_data(html: str, date):
             url = "https://krisha.kz" + div.find('a').get('href')
         except:
             url = ''
-
+            # вставляем запись в бд
 
         data = {'id_card': id_card,
-                'title': kv,
+                'title': title,
                 'price': price,
                 'etaj': etaj,
                 'square': square,
                 'zone': zone,
                 'address': address,
-                'description': descr,
+                'description': description,
                 'url': url,
                 'publish_date': publish_date
                 }
         if date in publish_date:
             result_data.append(data)
+        if my_bd_command.check_arenda(id_card) == 0:
+            my_bd_command.insert_arenda(id_card, title, price, etaj, square, zone, address, description, url, publish_date)
+            print('[INFO] Объявления добавлены в БД')
     return result_data
+
+
 
 
 def collect_data(total_pages: int, url: str, date):
@@ -127,8 +132,9 @@ def collect_data(total_pages: int, url: str, date):
         json.dump(result_all, file, indent=4, ensure_ascii=False)
 
 def main():
-    price_from = 150000
-    price_to = 200000
+    my_bd_command.create_table()
+    price_from = 0
+    price_to = 2000000000000
     current_date = str(date.today())[-2:]
     room = '2'
     cities = 'almaty'
