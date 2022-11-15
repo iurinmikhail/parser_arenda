@@ -46,6 +46,12 @@ def get_data(html: str, date):
     result_data = []
     for ad in ads:
         try:
+            a = ad.find('a', class_='a-action a-action-favorite is-not-favorited')
+            id = int(a.get('data-a-id'))
+            print(id)
+        except:
+            id = ''
+        try:
             div = ad.find('a', class_='a-card__title').text
             kv = div.split(",")[0]
         except:
@@ -84,7 +90,8 @@ def get_data(html: str, date):
             url = ''
 
 
-        data = {'title': kv,
+        data = {'id': id,
+                'title': kv,
                 'price': price,
                 'etaj': etaj,
                 'square': square,
