@@ -2,7 +2,7 @@ import json
 import bs4
 import requests
 from datetime import date
-
+import my_bd_command
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -29,7 +29,7 @@ def write_html_in_file(html: str):
 
 def get_pages(html: str) -> int:
     """Получение количества страниц"""
-    soup = bs4.BeautifulSoup(html, 'html')
+    soup = bs4.BeautifulSoup(html, 'html.parser')
     divs = soup.find('nav', class_='paginator')
     pages = divs.find_all('a', class_='paginator__btn')[-2].get('href')
     total_pages = pages.split('page=')[1].split('&')[0]
@@ -40,16 +40,16 @@ def get_data(html: str, date):
     """
     Ищет данные на одной странице
     """
-    soup = bs4.BeautifulSoup(html, 'html')
+    soup = bs4.BeautifulSoup(html, 'html.parser')
     divs = soup.find('section', class_='a-list a-search-list a-list-with-favs')
     ads = divs.find_all('div', class_='a-card__inc')
     result_data = []
     for ad in ads:
         try:
             a = ad.find('a', class_='a-action a-action-favorite is-not-favorited')
-            id = int(a.get('data-a-id'))
+            id_card = int(a.get('data-a-id'))
         except:
-            id = ''
+            id_card = ''
         try:
             div = ad.find('a', class_='a-card__title').text
             kv = div.split(",")[0]
@@ -83,9 +83,9 @@ def get_data(html: str, date):
             descr = ''
         try:
             div = ad.find('div', class_='card-stats').text.strip()
-            release = ' '.join(div.split()[1:])
+            publish_date = ' '.join(div.split()[1:])
         except:
-            release = ''
+            publish_date = ''
         try:
             div = ad.find('div', class_='a-card__header-left')
             url = "https://krisha.kz" + div.find('a').get('href')
@@ -93,7 +93,7 @@ def get_data(html: str, date):
             url = ''
 
 
-        data = {'id': id,
+        data = {'id_card': id_card,
                 'title': kv,
                 'price': price,
                 'etaj': etaj,
@@ -102,9 +102,9 @@ def get_data(html: str, date):
                 'address': address,
                 'description': descr,
                 'url': url,
-                'release': release
+                'publish_date': publish_date
                 }
-        if date in release:
+        if date in publish_date:
             result_data.append(data)
     return result_data
 
