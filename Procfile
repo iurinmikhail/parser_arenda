@@ -1,0 +1,1 @@
+worker: python dispetcher_bot.py

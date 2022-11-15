@@ -1,3 +1,5 @@
+from time import sleep
+
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import Text
 import requests
@@ -40,6 +42,9 @@ async def get_discount_sneakers(message: types.Message):
                    f"🔥{item.get('url')}"
 
             await message.answer(card)
+
+
+
 
 def main():
     executor.start_polling(dp)

@@ -92,23 +92,26 @@ def get_data(html: str, date):
         except:
             url = ''
             # вставляем запись в бд
-
-        data = {'id_card': id_card,
-                'title': title,
-                'price': price,
-                'etaj': etaj,
-                'square': square,
-                'zone': zone,
-                'address': address,
-                'description': description,
-                'url': url,
-                'publish_date': publish_date
-                }
-        if date in publish_date:
-            result_data.append(data)
-        if my_bd_command.check_arenda(id_card) == 0:
-            my_bd_command.insert_arenda(id_card, title, price, etaj, square, zone, address, description, url, publish_date)
-            print('[INFO] Объявления добавлены в БД')
+        try:
+            if my_bd_command.check_arenda(id_card) == 0:
+                my_bd_command.insert_arenda(id_card, title, price, etaj, square, zone, address, description, url,
+                                            publish_date)
+                result_data.append({
+                    'id_card': id_card,
+                    'title': title,
+                    'price': price,
+                    'etaj': etaj,
+                    'square': square,
+                    'zone': zone,
+                    'address': address,
+                    'description': description,
+                    'url': url,
+                    'publish_date': publish_date
+                })
+                print('[INFO] Объявление добавлено в БД')
+        except Exception as ex:
+            print('[X] Ошибка вставки данных в бд: ', ex)
+            continue
     return result_data
 
 
@@ -134,9 +137,9 @@ def collect_data(total_pages: int, url: str, date):
 def main():
     my_bd_command.create_table()
     price_from = 0
-    price_to = 2000000000000
+    price_to = 90000000
     current_date = str(date.today())[-2:]
-    room = '2'
+    room = '1'
     cities = 'almaty'
     url = f"https://krisha.kz/arenda/kvartiry/{cities}/?das[_sys.hasphoto]=1&das[live.rooms][]={room}&das[price][from]={price_from}&das[price][to]={price_to}&das[rent.period]=2&das[who]=1"
     html = get_html(url=url)
