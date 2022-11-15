@@ -48,7 +48,6 @@ def get_data(html: str, date):
         try:
             a = ad.find('a', class_='a-action a-action-favorite is-not-favorited')
             id = int(a.get('data-a-id'))
-            print(id)
         except:
             id = ''
         try:
@@ -71,7 +70,11 @@ def get_data(html: str, date):
         except:
             price = ''
         try:
-            address = ad.find('div', class_='a-card__subtitle').text.strip()
+            zone = ad.find('div', class_='a-card__subtitle').text.strip().split(',')[0]
+        except:
+            zone = ''
+        try:
+            address = ad.find('div', class_='a-card__subtitle').text.strip().split(',')[1]
         except:
             address = ''
         try:
@@ -95,6 +98,7 @@ def get_data(html: str, date):
                 'price': price,
                 'etaj': etaj,
                 'square': square,
+                'zone': zone,
                 'address': address,
                 'description': descr,
                 'url': url,
