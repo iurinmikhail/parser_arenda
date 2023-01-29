@@ -1,48 +1,74 @@
-import sqlite3
-import datetime
+import sqlite3 as sq
+from datetime import datetime
+from sqlite3 import Error
+
+from tqdm import tqdm
+
+class CommandSQlite:
+    def __init__(self, db_path):
+        self.db_path = db_path
+        self.connection = self._create_connection()
+
+    def _create_connection(self):
+        connection = None
+        try:
+            with sq.connect(self.db_path) as connection:
+                print(f"Подключился к базе данных {self.db_path} ")
+        except Error as e:
+            print(f"Произошла ошибка при подключении к базе данных{self.db_path} {e}")
+        return connection
+
+    def execute_query(self, query: str):
+        """
+        Создание и изменение таблиц
+        query - команда
+        """
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(query)
+            self.connection.commit()
+        except Error as e:
+            print(f"Произошла ошибка {e}")
+
+    def execute_read_query(self, query: str, as_dict=False):
+        """
+        Извлекает данные из таблицы
+        Принимает SELECT-запрос
+        """
+        if as_dict:
+            self.connection.row_factory = sq.Row
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(query)
+            return (i for i in cursor)
+        except Error as e:
+            print(f"Произошла ошибка {e}")
 
 
-def create_table():
-    """Создание базы данных"""
-    with sqlite3.connect("arenda_bd.db") as db:
-        cursor = db.cursor()
 
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS arenda(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_card INT,
-        title TEXT,
-        price TEXT,
-        etaj TEXT,
-        square TEXT,
-        zone TEXT,
-        address TEXT,
-        description TEXT,
-        url TEXT,
-        publish_date TEXT,
-        parsing_date DATE
-        );""")
-        db.commit()
-
-
-def insert_arenda(col1, col2, col3, col4, col5, col6, col7, col8, col9, col10):
+def insert_arenda(args):
     """Вставляет данные в бд"""
-    with sqlite3.connect("arenda_bd.db") as db:
+    insert_command = """
+                    INSERT INTO arenda (id_card, title, price, etaj, square, zone, address, description,
+                    url, publish_date, parsing_date) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?);
+                        """
+    with sq.connect("arenda_bd.db") as db:
         cursor = db.cursor()
-        data_list = (col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, datetime.datetime.now())
-        cursor.execute("""
-                        INSERT INTO arenda (id_card, title, price, etaj, square, zone, address, description,
-                        url, publish_date, parsing_date) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?);
-                            """, data_list)
+        args.append(datetime.now())
+        cursor.execute(insert_command, args)
         db.commit()
 
 
 def check_arenda(id_card):
     """Проверка наличия объявления в БД"""
-    with sqlite3.connect("arenda_bd.db") as db:
+
+    with sq.connect("arenda_bd.db") as db:
+        select_command = f"""SELECT id_card 
+                            FROM arenda 
+                            WHERE id_card = {id_card} """
         cursor = db.cursor()
-        cursor.execute(f"""SELECT id_card FROM arenda WHERE id_card = {id_card} """)
+        cursor.execute(select_command)
         result = cursor.fetchall()
         if len(result) == 0:
             return 0
@@ -52,10 +78,10 @@ def check_arenda(id_card):
 
 def get_data_from_db():
     """Получение данных из БД"""
-    with sqlite3.connect("arenda_bd.db") as db:
+    with sq.connect("arenda_bd.db") as db:
         cursor = db.cursor()
         cursor.execute("""SELECT id_card, title, price, etaj, square, zone, address, description,/
-                        url, publish_date, parsing_date FROM arenda""")
-        # вывод всех объявлений
+                        url, publish_date, parsing_date 
+                        FROM arenda""")
         data_set = cursor.fetchall()
         return data_set
